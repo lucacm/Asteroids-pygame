@@ -27,7 +27,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
 
         # Construtor da classe pai (Sprite).
-        pygame.spirte.Sprite.__init__(self)
+        pygame.sprite.Sprite.__init__(self)
 
         # Carregando a imagem de fundo.
         player_img = pygame.image.load(path.join(img_dir, "playerShip1_orange.png")).convert()
@@ -45,6 +45,19 @@ class Player(pygame.sprite.Sprite):
         # Centraliza embaixo da tela
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
+
+        # Velocidade da nave
+        self.speedx = 0
+
+    # Metodo que atualiza a posição da navinha
+    def update(self):
+        self.rect.x += self.speedx
+
+        # Mantem dentro da tela
+        if self.rect.right > WIDTH:
+            self.rect.right = WIDTH
+        if self.rect.left < 0:
+            self.rect.left = 0
 
 
 
@@ -88,11 +101,31 @@ try:
             # Verifica se foi fechado
             if event.type == pygame.QUIT:
                 running = False
+
+            # Verifica se apertou alguma tecla.
+            if event.type == pygame.KEYDOWN:
+                # Dependendo da tecla, altera a velocidade.
+                if event.key == pygame.K_LEFT:
+                    player.speedx = -8
+                if event.key == pygame.K_RIGHT:
+                    player.speedx = 8
+
+            # Verifica se soltou alguma tecla.
+            if event.type == pygame.KEYUP:
+                # Dependendo da tecla, altera a velocidade.
+                if event.key == pygame.K_LEFT:
+                    player.speedx = 0
+                if event.key == pygame.K_RIGHT:
+                    player.speedx = 0
+
+        # Depois de processar os eventos.
+        # Atualiza a acao de cada sprite;
+        all_sprites.update()
     
         # A cada loop, redesenha o fundo e os sprites
         screen.fill(BLACK)
         screen.blit(background, background_rect)
-        all.sprites.draw(screen)
+        all_sprites.draw(screen)
 
         # Depois de desenhar tudo, inverte o display.
         pygame.display.flip()
