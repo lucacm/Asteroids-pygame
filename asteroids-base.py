@@ -2,11 +2,15 @@
 
 # Importando as bibliotecas necessárias.
 import pygame
-from os import path
 import random
+import time
+from os import path
 
 # Estabelece a pasta que contem as figuras.
 img_dir = path.join(path.dirname(__file__), 'img')
+
+# Estabelece a pasta que contem os sons.
+snd_dir = path.join(path.dirname(__file__), 'snd') 
 
 # Dados gerais do jogo.
 WIDTH = 480 # Largura da tela
@@ -50,6 +54,9 @@ class Player(pygame.sprite.Sprite):
         # Velocidade da nave
         self.speedx = 0
 
+        # Melhora a colisao estabelecendo um raio de um circulo
+        self.radius = 25
+
     # Metodo que atualiza a posição da navinha
     def update(self):
         self.rect.x += self.speedx
@@ -90,6 +97,9 @@ class Mob(pygame.sprite.Sprite):
         self.speedx = random.randrange(-3, 3)
         self.speedy = random.randrange(2, 9)
 
+        # Melhora a colisão estabelecendo um raio de um circulo
+        self.radius = int(self.rect.width * .85 / 2)
+
     # Metodo que atualiza a posição da navinha
     def update(self):
         self.rect.x += self.speedx
@@ -119,6 +129,11 @@ clock = pygame.time.Clock()
 background = pygame.image.load(path.join(img_dir, 'starfield.png')).convert()
 background_rect = background.get_rect()
 
+# Carrega os sons do jogo
+pygame.mixer.music.load(path.join(snd_dir, 'tgfcoder-FrozenJam-SeamlessLoop.ogg'))
+pygame.mixer.music.set_volume(0.4)
+boom_sound = pygame.mixer.Sound(path.join(snd_dir, 'expl3.wav'))
+
 # Cria uma nave. O construtor será chamado automaticamente.
 player = Player()
 
@@ -139,6 +154,7 @@ for i in range(8):
 try:
     
     # Loop principal.
+    pygame.mixer.music.play(loops=-1)
     running = True
     while running:
         
@@ -171,7 +187,16 @@ try:
         # Depois de processar os eventos.
         # Atualiza a acao de cada sprite;
         all_sprites.update()
-    
+
+        # Verifica se houve colisão entre nave e meteoro
+        hits = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_circle)
+        if hits:
+            # Toca o som da colisão
+            boom_sound.play()
+            time.sleep(1) # Precisa esperar senão fecha
+
+            running = False 
+
         # A cada loop, redesenha o fundo e os sprites
         screen.fill(BLACK)
         screen.blit(background, background_rect)
